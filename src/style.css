@@ -7,3 +7,7 @@ body {
   max-width: 960px;
   margin: auto;
 }
+
+.text-center {
+  text-align: center;
+}
