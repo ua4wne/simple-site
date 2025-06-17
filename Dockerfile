@@ -4,6 +4,6 @@ FROM nginx:1.28.0
 RUN rm -rf /usr/share/nginx/html/*
 
 # загружаем свой контент
-COPY src/ /usr/share/nginx/html/
+COPY app/ /usr/share/nginx/html/
 
 EXPOSE 80
