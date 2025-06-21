@@ -1,14 +1,21 @@
 # Создание сервисного аккаунта
-resource "yandex_iam_service_account" "registry_pusher" {
-  name        = "registry-pusher"
-  description = "Service account for pushing to YCR"
+resource "yandex_iam_service_account" "registry_push_pull" {
+  name        = "registry-push-pull"
+  description = "Service account for pushing and pulling to YCR"
 }
 
 # Назначение роли pusher (можно viewer, puller, editor, owner и т.д.)
 resource "yandex_resourcemanager_folder_iam_member" "registry_push_role" {
   folder_id = var.folder_id
   role      = "container-registry.images.pusher"
-  member    = "serviceAccount:${yandex_iam_service_account.registry_pusher.id}"
+  member    = "serviceAccount:${yandex_iam_service_account.registry_push_pull.id}"
+}
+
+# Назначение роли puller (можно viewer, puller, editor, owner и т.д.)
+resource "yandex_resourcemanager_folder_iam_member" "registry_pull_role" {
+  folder_id = var.folder_id
+  role      = "container-registry.images.puller"
+  member    = "serviceAccount:${yandex_iam_service_account.registry_push_pull.id}"
 }
 
 # --- Container Registry ---
@@ -29,12 +36,12 @@ locals {
 
 # --- Формируем ключ доступа ---
 resource "null_resource" "create_json_key" {
-  depends_on = [yandex_iam_service_account.registry_pusher]
+  depends_on = [yandex_iam_service_account.registry_push_pull]
 
   provisioner "local-exec" {
     command = <<EOT
       yc iam key create \
-        --service-account-id ${yandex_iam_service_account.registry_pusher.id} \
+        --service-account-id ${yandex_iam_service_account.registry_push_pull.id} \
         --output key.json
     EOT
   }
@@ -47,8 +54,6 @@ resource "null_resource" "create_json_key" {
 # --- Сборка и пуш через Docker CLI ---
 resource "null_resource" "build_and_push_docker_image" {
   triggers = {
-    # always_run = "${timestamp()}"
-    # Триггер на создание реестра или изменения Dockerfile
     registry_id  = yandex_container_registry.main.id
     image_tag    = "latest"
     docker_hash  = filesha1("../Dockerfile") # или другой файл
@@ -64,7 +69,7 @@ resource "null_resource" "build_and_push_docker_image" {
       docker build -t ${local.registry_url}/app/site:latest -f ../Dockerfile ../
       echo "Пуш в Yandex Container Registry..."
       docker push ${local.registry_url}/app/site:latest
-      rm key.json
     EOT
+    # rm key.json
   }
 }
