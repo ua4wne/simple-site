@@ -1,11 +1,10 @@
 name: Build & Deploy to K8s
-
 on:
   push:
-    branches: [ main ]
-  # + поддержка тегов
-  tags:
-    - "*"
+    branches:
+      - main
+    tags:
+      - '*'
 
 jobs:
   build-and-deploy:
