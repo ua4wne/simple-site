@@ -46,6 +46,7 @@ jobs:
         echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig
         export KUBECONFIG=$PWD/kubeconfig
         kubectl config set-context --current --namespace=diplom-app
+        kubectl config get-contexts
 
     - name: Deploy to Kubernetes
       run: |
