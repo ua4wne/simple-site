@@ -49,4 +49,5 @@ jobs:
 
     - name: Deploy to Kubernetes
       run: |
-        kubectl set image deployment/my-app my-app=cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app/site:${{ steps.meta.outputs.tag }} --record
+        kubectl apply -f deploy.yaml
+        kubectl apply -f service.yaml
