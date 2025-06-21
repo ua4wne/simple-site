@@ -1,0 +1,52 @@
+name: Build & Deploy to K8s
+
+on:
+  push:
+    branches: [ main ]
+  # + поддержка тегов
+  tags:
+    - "*"
+
+jobs:
+  build-and-deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repo
+      uses: actions/checkout@v3
+
+    - name: Get Git Info
+      id: git
+      run: |
+        echo "short_sha=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        echo "tag=${GITHUB_REF##*/}" >> $GITHUB_OUTPUT
+
+    - name: Set Docker Tag
+      id: meta
+      run: |
+        if [[ "${{ github.ref_type }}" == "tag" ]]; then
+          echo "tag=${{ steps.git.outputs.tag }}" >> $GITHUB_OUTPUT
+        else
+          echo "tag=${{ steps.git.outputs.short_sha }}" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Login to YCR
+      run: |
+        echo "${{ secrets.YC_JSON_KEY }}" > key.json
+        cat key.json | docker login --username json_key --password-stdin cr.yandex
+
+    - name: Build & Push Docker Image
+      run: |
+        IMAGE="cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app/site:${{ steps.meta.outputs.tag }}"
+        docker build -t $IMAGE .
+        docker push $IMAGE
+        echo "Pushed image: $IMAGE"
+
+    - name: Set up kubeconfig
+      run: |
+        echo "${{ secrets.KUBE_CONFIG }}" > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+
+    - name: Deploy to Kubernetes
+      run: |
+        kubectl set image deployment/my-app my-app=cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app/site:${{ steps.meta.outputs.tag }} --record
