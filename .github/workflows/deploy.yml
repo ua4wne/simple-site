@@ -45,7 +45,9 @@ jobs:
       run: |
         echo "${{ secrets.KUBE_CONFIG_B64 }}" | base64 -d > kubeconfig
         export KUBECONFIG=$PWD/kubeconfig
+        kubectl version --short
+        kubectl config current-context
 
     - name: Deploy to Kubernetes
       run: |
-        kubectl set image deployment/diplom-app diplom-app=cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app/site:${{ steps.meta.outputs.tag }} --namespace=namespace=diplom-app
+        kubectl set image deployment/diplom-app diplom-app=cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app/site:${{ steps.meta.outputs.tag }} --namespace=diplom-app
