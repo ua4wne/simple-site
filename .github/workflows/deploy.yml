@@ -51,4 +51,4 @@ jobs:
       env:
         KUBECONFIG: ${{ github.workspace }}/kubeconfig
       run: |
-        kubectl set image deployment/diplom-app diplom-app=cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app/site:${{ steps.meta.outputs.tag }} --namespace=diplom-site
+        kubectl set image deployment/diplom-app diplom-simple-site=cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app/site:${{ steps.meta.outputs.tag }} --namespace=diplom-site
