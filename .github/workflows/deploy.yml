@@ -43,8 +43,9 @@ jobs:
 
     - name: Set up kubeconfig
       run: |
-        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > $HOME/.kube/config
-        export KUBECONFIG=$HOME/.kube/config
+        echo "${{ secrets.KUBE_CONFIG }}" | base64 -d > kubeconfig
+        export KUBECONFIG=$PWD/kubeconfig
+        kubectl get pods --namespace=diplom-app
 
     - name: Deploy to Kubernetes
       run: |
