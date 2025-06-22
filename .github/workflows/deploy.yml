@@ -48,5 +48,7 @@ jobs:
         kubectl get pods --namespace=diplom-app
 
     - name: Deploy to Kubernetes
+      env:
+        KUBECONFIG: ${{ github.workspace }}/kubeconfig
       run: |
         kubectl set image deployment/diplom-app diplom-app=cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app/site:${{ steps.meta.outputs.tag }} --namespace=diplom-app
