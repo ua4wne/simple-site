@@ -37,7 +37,7 @@ jobs:
     - name: Build & Push Docker Image
       run: |
         IMAGE="cr.yandex/${{ secrets.YC_REGISTRY_ID }}/app/site:${{ steps.meta.outputs.tag }}"
-        docker build -t $IMAGE .
+        docker build --no-cache -t $IMAGE .
         docker push $IMAGE
         echo "Pushed image: $IMAGE"
 
